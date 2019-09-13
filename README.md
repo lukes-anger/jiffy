@@ -1,5 +1,5 @@
 # jiffy
 16 Sec looper for Norns
 >>------>
-Zero to jamming in a wink of an eye
+Zero to jamming in the wink of an eye
 >>------>
