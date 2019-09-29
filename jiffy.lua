@@ -218,12 +218,12 @@ function key(n, z)
     end
   elseif n == 3 and z == 1 then
     if alt then
-      reset_loop()
-      buffclear = true
-      for i = 1,2 do
+    for i = 1,2 do
         softcut.play(i, 0)
         softcut.rec(i, 0)
-      end  
+      end        
+      reset_loop()
+      buffclear = true
       playing = false
       recording = false
       loopclear = true
