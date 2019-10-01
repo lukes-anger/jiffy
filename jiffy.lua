@@ -1,5 +1,5 @@
 -- Jiffy
--- 1.0.1 @molotov
+-- 1.0.2 @molotov
 -- llllllll.co/t/jiffy
 --
 -- >>------>
@@ -133,7 +133,8 @@ function init()
   softcut.level_input_cut(2, 1, 0)
   softcut.level_input_cut(1, 2, 0)
   softcut.level_input_cut(2, 2, 1)  
-  
+  softcut.pan(1,-1)
+  softcut.pan(2,1)
   for i = 1, 2 do
     softcut.level(i,1)
     softcut.level_slew_time(i,0.1)
@@ -151,8 +152,7 @@ function init()
     softcut.buffer(i,i)
     softcut.enable(i, 1)
     softcut.filter_dry(i, 1)
-    softcut.pan(1,1)
-    softcut.pan(2,0)
+
 
     -- sample start controls
     params:add_control(i .. "loop_start", i .. "loop start", controlspec.new(0.0, 15.99, "lin", .01, 0, "secs"))
@@ -195,14 +195,24 @@ function key(n, z)
   
   -- set key2 as record/overdub
   if n == 2 and z == 1 then
-    if recording == false then
+    if recording == false and playing == true then
       for i = 1,2 do
         softcut.rec(i, 1)
+        softcut.play(i, 1) 
       end  
       recording = true
       start_time = util.time()
       loopclear = false
-    else
+    elseif recording == false and playing == false then
+      for i = 1,2 do
+        softcut.position(i, 0)
+        softcut.rec(i, 1)
+        softcut.play(i, 1) 
+      end  
+      recording = true
+      start_time = util.time()
+      loopclear = false
+    else  
       for i = 1,2 do
         softcut.rec(i, 0)
         softcut.play(i, 1)        
