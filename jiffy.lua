@@ -1,5 +1,5 @@
 -- Jiffy
--- 1.0.2 @molotov
+-- 1.1 @molotov
 -- llllllll.co/t/jiffy
 --
 -- >>------>
@@ -14,7 +14,7 @@
 --
 -- >>------>
 --
--- E1      : Slew
+-- E1      : Wonk
 -- E2      : Speed
 -- E3      : Dub Level
 
@@ -97,14 +97,14 @@ end
 
 local function dialx(x,y,v)
   screen.aa(1)
-  d1 = UI.Dial.new (x, y, 20, .5, 0, 5.0, 0.01, 1.0, nothing, 0.0, "slew")
+  d1 = UI.Dial.new (x, y, 20, 0, 0.0, 1.0, 0.01, 0.0, nothing, 0.0, "slew")
   d1:set_value_delta(v)
   d1:redraw()
 end
 
 local function dialy(x,y,v)
   screen.aa(1)
-  d1 = UI.Dial.new (x, y, 20, 0, 0.0, 1.0, 0.01, 1.0, nothing, 0.0, "level")
+  d1 = UI.Dial.new (x, y, 20, 0, 0.0, 1.0, 0.01, 0.0, nothing, 0.0, "dub")
   d1:set_value_delta(v)
   d1:redraw()
 end
@@ -120,7 +120,7 @@ end
 local function dialtime(i,x,y,v)
   screen.aa(1)
   markers = {params:get(i .. "loop_end")}
-  d1 = UI.Dial.new (x, y, 30, 0, 0.0, 16.0, 0.01, 0.0, markers, 0.0, "")
+  d1 = UI.Dial.new (x, y, 40, 0, 0.0, 16.0, 0.01, 0.0, markers, 0.0, "")
   d1:set_value(v)
   d1:redraw()
 end
@@ -295,38 +295,36 @@ end
 function redraw()
   screen.aa(1)
   screen.clear()
+  screen.font_size(10)
   if recording then
-    screen.circle(66,49,5)
+    screen.circle(66,25,5)
     screen.fill()
   elseif playing and rate > 0 then
-    pbicon(61,44,10,1)
+    pbicon(61,20,10,1)
   elseif playing and rate < 0 then
-    pbicon(61,44,10,2)
+    pbicon(61,20,10,2)
   elseif playing and rate == 0 then  
-    pbicon(61,44,10,0)
+    pbicon(61,20,10,0)
   elseif not playing and not recording then
-    pbicon(61,44,10,0)  
+    pbicon(61,20,10,0)  
   end
-  screen.move(5, 60)
-  screen.level(5)
-  screen.move(59,22)
-  dialz(56,5,rate)
-  dialx(5,5,slew)
+  dialz(5,5,rate)
+  dialx(5,35,slew)
   -- uses voice 1 as current position
-  dialtime(1, 51,35,current_position)
-  screen.move(100, 60)
+  dialtime(1, 46,5,current_position)
+  screen.move(90, 55)
   screen.font_face(4)
-  screen.font_size(10)  
+  screen.font_size(20)  
   if recording or playing then
-    screen.text(string.format("%.2f", current_position))
+    screen.text(string.format("%.1f", current_position))
   else
     -- uses voice 1 as loop_end indicator
-    screen.text(string.format("%.2f",params:get(1 .. "loop_end")))
+    screen.text(string.format("%.1f",params:get(1 .. "loop_end")))
   end
-  screen.level(15)
-  screen.move(108,20)
+  --screen.level(15)
+  screen.move(106,20)
+  screen.font_size(10)
   dialy(105,5,pre)
   screen.update()
 end
-
 
