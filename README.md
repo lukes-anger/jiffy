@@ -1,5 +1,5 @@
 # jiffy
-16 Sec looper for Norns
+16 Second looper for Norns
 
 Quick and fun to use, the loop is limited to 16 seconds at regular playback speed, loosly inspired by old loopers like the EHX 16 sec delay.
 
