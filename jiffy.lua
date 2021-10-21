@@ -14,7 +14,7 @@
 --
 -- >>------>
 --
--- E1      : Wonk
+-- E1      : Slew
 -- E2      : Speed
 -- E3      : Dub Level
 
@@ -309,7 +309,7 @@ function redraw()
     pbicon(61,20,10,0)  
   end
   dialz(5,5,rate)
-  dialx(5,35,slew)
+  dialy(5,35,pre)  
   -- uses voice 1 as current position
   dialtime(1, 46,5,current_position)
   screen.move(90, 55)
@@ -324,7 +324,7 @@ function redraw()
   --screen.level(15)
   screen.move(106,20)
   screen.font_size(10)
-  dialy(105,5,pre)
+  dialx(105,5,slew)  
   screen.update()
 end
 
