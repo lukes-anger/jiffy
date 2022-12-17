@@ -18,7 +18,6 @@
 -- E2      : Speed
 -- E3      : Dub Level
 
-
 local alt = false
 local recording = false
 local playing = false
@@ -83,7 +82,6 @@ local function set_loop_end(v)
     softcut.loop_end(i, v)
   end
 end
-
 
 local function update_positions(voice,position)
   current_position = position
@@ -153,7 +151,6 @@ function init()
     softcut.enable(i, 1)
     softcut.filter_dry(i, 1)
 
-
     -- sample start controls
     params:add_control(i .. "loop_start", i .. "loop start", controlspec.new(0.0, 15.99, "lin", .01, 0, "secs"))
     params:set_action(i .. "loop_start", function(x) set_loop_start(x) end)
@@ -177,7 +174,6 @@ function init()
   softcut.event_phase(update_positions)
   softcut.poll_start_phase()
 end 
-
 
 -- looper logic
 function key(n, z)
@@ -269,7 +265,6 @@ function key(n, z)
   end
 end
 
-
 -- encoder settings
 function enc(n,d)
   if n==1 then
@@ -310,7 +305,7 @@ function redraw()
   end
   dialz(5,5,rate)
   dialy(5,35,pre)  
-  -- uses voice 1 as current position
+  -- uses voice 1 as current_position indicator
   dialtime(1, 46,5,current_position)
   screen.move(90, 55)
   screen.font_face(4)
