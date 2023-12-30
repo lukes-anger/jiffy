@@ -1,5 +1,5 @@
 -- Jiffy
--- 1.1 @molotov
+-- 1.2 @molotov
 -- llllllll.co/t/jiffy
 --
 -- >>------>
@@ -39,7 +39,6 @@ function stereo()
   softcut.level_input_cut(2, 2, 1)
 end
 
-
 function mono()
   --set softcut to mono input
   softcut.level_input_cut(1, 1, 1)
@@ -56,6 +55,79 @@ function set_input(n)
   end
 end
 
+function play(i)
+  softcut.play(i, 1)
+  playing = true
+end
+
+function stop(i)
+  softcut.play(i, 0)
+  playing = false
+  recording = false
+end
+
+function stop_start(n)
+  for i = 1,2 do
+    if n == 1 then
+      play(i)
+    else
+      stop(i)
+    end
+  end
+end
+
+function record(n)
+  -- moved logic into function so can be used in params
+  if n == 1 and recording == false and playing == true then
+    for i = 1,2 do
+      softcut.rec(i, 1)
+      softcut.play(i, 1) 
+    end  
+    recording = true
+    start_time = util.time()
+    loopclear = false    
+  elseif n == 1 and recording == false and playing == false then
+    for i = 1,2 do
+      softcut.rec(i, 1)
+      softcut.play(i, 1) 
+    end
+    playing = true
+    recording = true
+    start_time = util.time()
+    loopclear = false
+  elseif n == 1 and recording == true and playing == true then
+    for i = 1,2 do
+      softcut.rec(i, 0)
+      softcut.play(i, 1) 
+      while params:get(i .. "loop_end") == 16.00 do
+        params:set(i .. "loop_end", current_position) 
+      end
+    end  
+    playing = false
+    recording = false
+    buffclear = false
+  elseif n == 1 and recording == true and playing == false then
+    for i = 1,2 do
+      softcut.rec(i, 0)
+      softcut.play(i, 0) 
+    end
+    recording = false
+  else  
+    for i = 1,2 do
+      softcut.rec(i, 0)
+      softcut.play(i, 1)        
+    end  
+    recording = false
+    playing = true
+    while buffclear == true do
+      for i = 1,2 do
+        params:set(i .. "loop_end", current_position)
+      end  
+    buffclear = false
+    end
+  end
+end
+
 local function reset_loop()
   -- empties buffers and resets loop length to 16 secs
   for i = 1,2 do
@@ -63,8 +135,14 @@ local function reset_loop()
     params:set(i .. "loop_start", 0)
     params:set(i .. "loop_end",16.0)
     softcut.position(i, 0)
+    softcut.rec(i, 0)
+    softcut.play(i, 0)
   end
   current_position = 0
+  buffclear = true
+  playing = false
+  recording = false
+  loopclear = true  
 end
 
 local function set_loop_start(v)
@@ -157,12 +235,25 @@ function init()
     -- sample end controls
     params:add_control(i .. "loop_end", i .. "loop end", controlspec.new(.01, 16, "lin", .01, 350, "secs"))
     params:set_action(i .. "loop_end", function(x) set_loop_end(x) end)
+
   end
   
-  -- input
+  -- params for looper controls
   params:add_option("input", "input", {"stereo", "mono (L)"}, 1)
   params:set_action("input", function(x) set_input(x) end)  
-  
+  params:add_option("stop_start", "stop_start", {">", "x"}, 1)
+  params:set_action("stop_start", function(x) stop_start(x) end)   
+  params:add_option("record", "record", {"o", "-"}, 2)
+  params:set_action("record", function(x) record(x) end)  
+  params:add_option("reset_loop", "reset_loop", {"", "x"}, 1)
+  params:set_action("reset_loop", function(x) reset_loop(x) end) 
+  params:add_control("slew", "slew", controlspec.new(0, 1, 'lin', 0, slew, ''))
+  params:set_action("slew", function(x) slew = x end)
+  params:add_control("rate", "speed", controlspec.new(-2, 2, 'lin', 0, rate, ''))
+  params:set_action("rate", function(x) rate = x end)
+  params:add_control("pre", "dub", controlspec.new(0, 1, 'lin', 0, pre, ''))
+  params:set_action("pre", function(x) pre = x end)
+
   -- screen metro
   local screen_timer = metro.init()
   screen_timer.time = 1/15
@@ -175,20 +266,13 @@ function init()
   softcut.poll_start_phase()
 end 
 
--- looper logic
+-- looper logic for norns keys
 function key(n, z)
   
   -- set key1 as alt
   if n == 1 then
     alt = z == 1 and true or false
   end
-  
-  -- set key2 as record/overdub
-    -- set key1 as alt
-  if n == 1 then
-    alt = z == 1 and true or false
-  end
-  
   -- set key2 as record/overdub
   if n == 2 and z == 1 then
     if recording == false and playing == true then
@@ -223,16 +307,8 @@ function key(n, z)
       end
     end
   elseif n == 3 and z == 1 then
-    if alt then
-    for i = 1,2 do
-        softcut.play(i, 0)
-        softcut.rec(i, 0)
-      end        
+    if alt then     
       reset_loop()
-      buffclear = true
-      playing = false
-      recording = false
-      loopclear = true
     else
       if playing == true then
         for i = 1,2 do
