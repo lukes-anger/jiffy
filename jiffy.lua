@@ -234,8 +234,10 @@ function init()
     -- sample end controls
     params:add_control(i .. "loop_end", i .. "loop end", controlspec.new(.01, 16, "lin", .01, 350, "secs"))
     params:set_action(i .. "loop_end", function(x) set_loop_end(x) end)
+
   end
   
+  -- params for looper controls
   params:add_option("input", "input", {"stereo", "mono (L)"}, 1)
   params:set_action("input", function(x) set_input(x) end)  
   params:add_option("stop_start", "stop_start", {">", "x"}, 1)
@@ -244,7 +246,12 @@ function init()
   params:set_action("record", function(x) record(x) end)  
   params:add_option("reset_loop", "reset_loop", {"", "x"}, 1)
   params:set_action("reset_loop", function(x) reset_loop(x) end) 
-
+  params:add_control("slew", "slew", controlspec.new(0, 1, 'lin', 0, slew, ''))
+  params:set_action("slew", function(x) slew = x end)
+  params:add_control("rate", "speed", controlspec.new(-2, 2, 'lin', 0, rate, ''))
+  params:set_action("rate", function(x) rate = x end)
+  params:add_control("pre", "dub", controlspec.new(0, 1, 'lin', 0, pre, ''))
+  params:set_action("pre", function(x) pre = x end)
 
   -- screen metro
   local screen_timer = metro.init()
