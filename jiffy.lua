@@ -77,6 +77,7 @@ function stop_start(n)
 end
 
 function record(n)
+  -- moved logic into function so can be used in params
   if n == 1 and recording == false and playing == true then
     for i = 1,2 do
       softcut.rec(i, 1)
@@ -265,7 +266,7 @@ function init()
   softcut.poll_start_phase()
 end 
 
--- looper logic
+-- looper logic for norns keys
 function key(n, z)
   
   -- set key1 as alt
