@@ -68,9 +68,9 @@ end
 
 function stop_start(n)
   for i = 1,2 do
-    if n == 1 and playing == false then
+    if n == 1 then
       play(i)
-    elseif n == 1 and playing == true then
+    else
       stop(i)
     end
   end
