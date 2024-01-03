@@ -47,7 +47,7 @@ function mono()
   softcut.level_input_cut(2, 2, 0)
 end
 
-function set_input(n)
+local function set_input(n)
   if n == 1 then
     stereo()
   else
@@ -55,38 +55,50 @@ function set_input(n)
   end
 end
 
-function play(i)
-  softcut.play(i, 1)
-  playing = true
-end
-
-function stop(i)
-  softcut.play(i, 0)
-  playing = false
-  recording = false
-end
-
-function stop_start(n)
+local function play()
   for i = 1,2 do
-    if n == 1 then
-      play(i)
-    else
-      stop(i)
-    end
+    softcut.play(i, 1)
+    playing = true
   end
 end
 
-function record(n)
+local function stop()
+  for i = 1,2 do
+    softcut.play(i, 0)
+    softcut.rec(i, 0)
+    playing = false
+    recording = false
+  end
+end
+
+local function stop_start(n)
+  if n == 3 and playing == false then
+    play()
+  elseif n == 3 and playing == true then
+    stop()
+  end
+end
+
+local function param_stop_start(n)
+  if n and playing == false then
+    play()
+  elseif n and playing == true then
+    stop()
+  end
+end
+
+local function record(n)
   -- moved logic into function so can be used in params
-  if n == 1 and recording == false and playing == true then
+  if n == 2 and recording == false and playing == false then
     for i = 1,2 do
       softcut.rec(i, 1)
-      softcut.play(i, 1) 
-    end  
+      softcut.play(i, 1)
+    end
+    playing = true
     recording = true
     start_time = util.time()
-    loopclear = false    
-  elseif n == 1 and recording == false and playing == false then
+    loopclear = false
+  elseif n == 2 and recording == false and playing == true then
     for i = 1,2 do
       softcut.rec(i, 1)
       softcut.play(i, 1) 
@@ -95,34 +107,34 @@ function record(n)
     recording = true
     start_time = util.time()
     loopclear = false
-  elseif n == 1 and recording == true and playing == true then
+  elseif n == 2 and recording == true and playing == true then
     for i = 1,2 do
       softcut.rec(i, 0)
       softcut.play(i, 1) 
       while params:get(i .. "loop_end") == 16.00 do
-        params:set(i .. "loop_end", current_position) 
+        params:set(i .. "loop_end", current_position)
       end
-    end  
-    playing = false
+    end
+    --playing = false
     recording = false
     buffclear = false
-  elseif n == 1 and recording == true and playing == false then
+  elseif n == 2 and recording == true and playing == false then
     for i = 1,2 do
       softcut.rec(i, 0)
       softcut.play(i, 0) 
     end
     recording = false
-  else  
+  else
     for i = 1,2 do
       softcut.rec(i, 0)
       softcut.play(i, 1)        
-    end  
+    end
     recording = false
     playing = true
     while buffclear == true do
       for i = 1,2 do
         params:set(i .. "loop_end", current_position)
-      end  
+      end
     buffclear = false
     end
   end
@@ -237,20 +249,26 @@ function init()
     params:set_action(i .. "loop_end", function(x) set_loop_end(x) end)
 
   end
-  
-  -- params for looper controls
+
+  -- params for input
   params:add_option("input", "input", {"stereo", "mono (L)"}, 1)
-  params:set_action("input", function(x) set_input(x) end)  
+  params:set_action("input", function(x) set_input(x) end)
+  -- params for stop start
   params:add_option("stop_start", "stop_start", {">", "x"}, 1)
-  params:set_action("stop_start", function(x) stop_start(x) end)   
-  params:add_option("record", "record", {"o", "-"}, 2)
-  params:set_action("record", function(x) record(x) end)  
+  params:set_action("stop_start", function(x) param_stop_start(x) end)
+  -- params for record
+  params:add_option("record", "record", {"o", "-"}, 1)
+  params:set_action("record", function(x) record(x) end)
+  -- params for reset loop
   params:add_option("reset_loop", "reset_loop", {"", "x"}, 1)
-  params:set_action("reset_loop", function(x) reset_loop(x) end) 
+  params:set_action("reset_loop", function(x) reset_loop() end)
+  -- params for slew
   params:add_control("slew", "slew", controlspec.new(0, 1, 'lin', 0, slew, ''))
   params:set_action("slew", function(x) slew = x end)
+  -- params for speed
   params:add_control("rate", "speed", controlspec.new(-2, 2, 'lin', 0, rate, ''))
   params:set_action("rate", function(x) rate = x end)
+  -- params for dub
   params:add_control("pre", "dub", controlspec.new(0, 1, 'lin', 0, pre, ''))
   params:set_action("pre", function(x) pre = x end)
 
@@ -264,79 +282,23 @@ function init()
   softcut.phase_quant(1, .01)
   softcut.event_phase(update_positions)
   softcut.poll_start_phase()
-end 
+end
 
 -- looper logic for norns keys
 function key(n, z)
-  
   -- set key1 as alt
   if n == 1 then
     alt = z == 1 and true or false
   end
   -- set key2 as record/overdub
   if n == 2 and z == 1 then
-    if recording == false and playing == true then
-      for i = 1,2 do
-        softcut.rec(i, 1)
-        softcut.play(i, 1) 
-      end  
-      recording = true
-      start_time = util.time()
-      loopclear = false
-    elseif recording == false and playing == false then
-      for i = 1,2 do
-        softcut.position(i, 0)
-        softcut.rec(i, 1)
-        softcut.play(i, 1) 
-      end  
-      recording = true
-      start_time = util.time()
-      loopclear = false
-    else  
-      for i = 1,2 do
-        softcut.rec(i, 0)
-        softcut.play(i, 1)        
-      end  
-      recording = false
-      playing = true
-      while buffclear == true do
-        for i = 1,2 do
-          params:set(i .. "loop_end", current_position)
-        end  
-      buffclear = false
-      end
-    end
+    record(n)
+  -- set key3 as play/stop or clear loop  
   elseif n == 3 and z == 1 then
-    if alt then     
+    if alt then
       reset_loop()
     else
-      if playing == true then
-        for i = 1,2 do
-          softcut.play(i, 0)
-          softcut.rec(i, 0)
-        end  
-        playing = false
-        recording = false
-      elseif recording == true then
-        for i = 1,2 do
-          softcut.play(i, 0)
-          softcut.rec(i, 0)
-          while params:get(i .. "loop_end") == 16.00 do
-            params:set(i .. "loop_end", current_position) 
-        end  
-        playing = false
-        recording = false
-        buffclear = false
-        end
-      else  
-        for i = 1,2 do
-          softcut.position(i, 0)
-          softcut.play(i, 1)
-          softcut.rec(i, 0)
-        end
-        playing = true
-        recording = false
-      end
+      stop_start(n)
     end
   end
 end
