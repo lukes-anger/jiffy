@@ -177,11 +177,53 @@ local function update_positions(voice,position)
   current_position = position
 end
 
+local function slew_func(d)
+  slew = util.clamp(slew+d/5,0.1,5)
+  for i = 1,2 do
+    softcut.rate_slew_time(i,slew)
+  end
+end
+
+local function slew_param(x)
+  slew = x
+  for i = 1,2 do
+    softcut.rate_slew_time(i,x)
+  end
+end
+
+local function speed_func(d)
+  rate = util.clamp(rate+d/4,-2,2)
+  for i = 1,2 do
+    softcut.rate(i,rate)
+  end
+end
+
+local function speed_param(x)
+  rate = x
+  for i = 1,2 do
+    softcut.rate(i,x)
+  end
+end
+
+local function dub_func(d)
+  pre = util.clamp(pre+d/100,0,1)
+  for i = 1,2 do
+    softcut.pre_level(i,pre)
+  end
+end
+
+local function dub_param(x)
+  pre = x
+  for i = 1,2 do
+    softcut.pre_level(i,x)
+  end
+end
+
 local function pbicon(x,y,s,v)
   screen.aa(1)
   pbi = UI.PlaybackIcon.new(x, y, s, v)
   pbi:redraw()
-end   
+end
 
 local function dialx(x,y,v)
   screen.aa(1)
@@ -263,14 +305,14 @@ function init()
   params:add_option("reset_loop", "reset_loop", {"", "x"}, 1)
   params:set_action("reset_loop", function(x) reset_loop() end)
   -- params for slew
-  params:add_control("slew", "slew", controlspec.new(0, 1, 'lin', 0, slew, ''))
-  params:set_action("slew", function(x) slew = x end)
+  params:add_control("slew", "slew", controlspec.new(0, 1, 'lin', 0, 0, ''))
+  params:set_action("slew", function(x) slew_param(x) end)
   -- params for speed
-  params:add_control("rate", "speed", controlspec.new(-2, 2, 'lin', 0, rate, ''))
-  params:set_action("rate", function(x) rate = x end)
+  params:add_control("rate", "speed", controlspec.new(-2, 2, 'lin', 0, 0, ''))
+  params:set_action("rate", function(x) speed_param(x) end)
   -- params for dub
-  params:add_control("pre", "dub", controlspec.new(0, 1, 'lin', 0, pre, ''))
-  params:set_action("pre", function(x) pre = x end)
+  params:add_control("pre", "dub", controlspec.new(0, 1, 'lin', 0, 0, ''))
+  params:set_action("pre", function(x) dub_param(x) end)
 
   -- screen metro
   local screen_timer = metro.init()
@@ -306,20 +348,11 @@ end
 -- encoder settings
 function enc(n,d)
   if n==1 then
-    slew = util.clamp(slew+d/5,0.1,5)
-    for i = 1,2 do
-      softcut.rate_slew_time(i,slew)
-    end
+    slew_func(d)
   elseif n==2 then
-    rate = util.clamp(rate+d/4,-2,2)
-    for i = 1,2 do
-      softcut.rate(i,rate)
-    end  
+    speed_func(d)
   elseif n==3 then
-    pre = util.clamp(pre+d/100,0,1)
-    for i = 1,2 do
-      softcut.pre_level(i,pre)
-    end  
+    dub_func(d)
   end
   redraw()
 end
@@ -342,7 +375,7 @@ function redraw()
     pbicon(61,20,10,0)  
   end
   dialz(5,5,rate)
-  dialy(5,35,pre)  
+  dialy(5,35,pre)
   -- uses voice 1 as current_position indicator
   dialtime(1, 46,5,current_position)
   screen.move(90, 55)
