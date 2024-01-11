@@ -256,6 +256,7 @@ local function dialtime(i,x,y,v)
 end
 
 function init()
+  build_scale()
   audio.level_cut(1)
   audio.level_adc_cut(1)
   audio.level_eng_cut(1)
@@ -392,5 +393,29 @@ function redraw()
   screen.font_size(10)
   dialx(105,5,slew)  
   screen.update()
+end
+
+MusicUtil = require("musicutil")
+engine.name = 'PolyPerc'
+
+g = grid.connect()
+
+function build_scale()
+  notes_array = MusicUtil.generate_scale(60, "major", 10) -- builds quantization scale
+  notes_freq = MusicUtil.note_nums_to_freqs(notes_array) -- converts note numbers to an array of frequencies
+  print(notes_array[1])
+end
+
+g.key = function(x, y, z)
+  local idx = x + (16 - y) * 16
+  print(idx)
+  local note = notes_freq[idx]
+  
+  print(note)
+  if z == 1 then
+    engine.hz(note)
+  end
+  g:led(x,y,z*15)
+  g:refresh()
 end
 
