@@ -256,6 +256,9 @@ local function dialtime(i,x,y,v)
 end
 
 function init()
+  build_scale()
+  grid_keyboard_ui()
+  grid_looper_ui()
   audio.level_cut(1)
   audio.level_adc_cut(1)
   audio.level_eng_cut(1)
@@ -274,7 +277,7 @@ function init()
     softcut.loop_start(i, 0)
     softcut.loop_end(i, 16)
     softcut.loop(i, 1)
-    softcut.fade_time(i, 0.1)
+    softcut.fade_time(i, 0.2)
     softcut.rec(i, 0)
     softcut.rec_level(i,rec)
     softcut.pre_level(i, pre)
@@ -392,5 +395,54 @@ function redraw()
   screen.font_size(10)
   dialx(105,5,slew)  
   screen.update()
+end
+
+MusicUtil = require("musicutil")
+engine.name = 'PolyPerc'
+
+function build_scale()
+  notes_array = MusicUtil.generate_scale(36, "major", 5) -- builds quantization scale
+  notes_freq = MusicUtil.note_nums_to_freqs(notes_array) -- converts note numbers to an array of frequencies
+  print(notes_array[1])
+end
+
+g = grid.connect()
+
+function grid_keyboard_ui()
+  for i=1,16,1 do g:led(i,7,2) end
+  for i=1,16,1 do g:led(i,8,2) end
+  g:refresh()
+end
+
+function grid_looper_ui()
+  g:led(1,2,2)
+  g:led(2,2,2)
+  g:led(16,2,2)
+  g:refresh()
+end
+
+g.key = function(x, y, z)
+  print(x, y)
+  local idx = x + (8 - y) * 16
+  print(idx)
+  local note = notes_freq[idx] 
+  print(note)
+  
+  -- looper logic
+  if x == 1 and y == 2 and z == 1 then
+    record()
+  elseif x == 1 and y == 2 and z == 1 then
+    stop_start()
+  elseif x == 1 and y == 16 and z == 1 then
+    reset_loop()
+  end
+
+  -- limit to bottom 2 rows for synth keys
+  if y >= 7 and z == 1 then
+    engine.hz(note)
+    g:led(x,y,15)
+    g:refresh()  
+  end
+  grid_keyboard_ui()
 end
 
