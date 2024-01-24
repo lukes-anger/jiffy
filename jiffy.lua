@@ -409,9 +409,18 @@ end
 g = grid.connect()
 
 function grid_keyboard_ui()
-  for i=1,16,1 do g:led(i,7,2) end
-  for i=1,16,1 do g:led(i,8,2) end
+  for i=1,16,1 do g:led(i,15,2) end
+  for i=1,16,1 do g:led(i,16,2) end
   g:refresh()
+end
+
+function button_fade(x, y)
+  for i=15, 2, -1 do 
+    clock.sync(1/32)
+    g:led(x, y, i) 
+    g:refresh() 
+    print(i) 
+  end
 end
 
 function grid_looper_ui()
@@ -423,7 +432,7 @@ end
 
 g.key = function(x, y, z)
   print(x, y)
-  local idx = x + (8 - y) * 16
+  local idx = x + (16 - y) * 16
   print(idx)
   local note = notes_freq[idx] 
   print(note)
@@ -433,16 +442,14 @@ g.key = function(x, y, z)
     record()
   elseif x == 1 and y == 2 and z == 1 then
     stop_start()
-  elseif x == 1 and y == 16 and z == 1 then
+  elseif x == 16 and y == 2 and z == 1 then
     reset_loop()
   end
 
   -- limit to bottom 2 rows for synth keys
-  if y >= 7 and z == 1 then
+  if y >= 15 and z == 1 then
     engine.hz(note)
-    g:led(x,y,15)
-    g:refresh()  
+    clock.run(button_fade, x, y)
   end
-  grid_keyboard_ui()
 end
 
