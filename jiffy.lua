@@ -30,6 +30,7 @@ local buffclear = true
 local loopclear = false
 local pre = 0.9
 local UI = require 'ui'
+local Passersby = include("passersby/lib/passersby_engine")
 
 function stereo()
   -- set softcut to stereo inputs
@@ -398,7 +399,8 @@ function redraw()
 end
 
 MusicUtil = require("musicutil")
-engine.name = 'PolyPerc'
+--engine.name = 'PolyPerc'
+engine.name = "Passersby"
 
 function build_scale()
   notes_array = MusicUtil.generate_scale(36, "major", 5) -- builds quantization scale
@@ -419,36 +421,38 @@ function button_fade(x, y)
     clock.sync(1/32)
     g:led(x, y, i) 
     g:refresh() 
-    print(i) 
   end
 end
 
 function grid_looper_ui()
-  g:led(1,2,2)
-  g:led(2,2,2)
-  g:led(16,2,2)
+  g:led(1,1,2)
+  g:led(2,1,2)
+  g:led(16,1,2)
   g:refresh()
 end
 
 g.key = function(x, y, z)
-  print(x, y)
+  --print(x, y)
   local idx = x + (16 - y) * 16
-  print(idx)
+  --print(idx)
   local note = notes_freq[idx] 
-  print(note)
+  --print(note)
   
   -- looper logic
-  if x == 1 and y == 2 and z == 1 then
-    record()
-  elseif x == 1 and y == 2 and z == 1 then
-    stop_start()
-  elseif x == 16 and y == 2 and z == 1 then
+  if x == 1 and y == 1 and z == 1 then
+    n = 2
+    record(n)
+  elseif x == 2 and y == 1 and z == 1 then
+    n = 3
+    stop_start(n)
+  elseif x == 16 and y == 1 and z == 1 then
     reset_loop()
   end
 
   -- limit to bottom 2 rows for synth keys
   if y >= 15 and z == 1 then
-    engine.hz(note)
+    --engine.hz(note) -- polyperc
+    engine.noteOn(1, note, 1)
     clock.run(button_fade, x, y)
   end
 end
