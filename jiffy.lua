@@ -461,6 +461,7 @@ g.key = function(x, y, z)
       g:refresh()
     end    
   elseif x == 16 and y == 1 and z == 1 then
+    clock.run(button_fade, x, y)
     reset_loop()
     grid_looper_ui()
   end
