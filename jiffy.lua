@@ -442,11 +442,27 @@ g.key = function(x, y, z)
   if x == 1 and y == 1 and z == 1 then
     n = 2
     record(n)
+    if recording == true then
+      g:led(1,1,15)
+      g:led(2,1,15)
+      g:refresh()
+    elseif recording == false then
+      g:led(1,1,2)
+      g:refresh()
+    end
   elseif x == 2 and y == 1 and z == 1 then
     n = 3
     stop_start(n)
+    if playing == true then
+      g:led(2,1,15)
+      g:refresh()
+    elseif playing == false then
+      g:led(2,1,2)
+      g:refresh()
+    end    
   elseif x == 16 and y == 1 and z == 1 then
     reset_loop()
+    grid_looper_ui()
   end
 
   -- limit to bottom 2 rows for synth keys
